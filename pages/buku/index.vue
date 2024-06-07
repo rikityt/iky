@@ -16,7 +16,7 @@
         <div class="row justify-content-evenly">
           <div v-for="(buku, i) in books" :key="i" class="col-lg-2">
           <nuxt-link :to="`/buku/${buku.id}`">
-              <div class="card mb-3">
+              <div class="card mb-3 shadow-lg">
                 <div class="card-body">
                   <img :src="buku.cover" class="cover" :alt="buku.judul" />
                 </div>
@@ -33,27 +33,34 @@
 </template>
 
 <script setup>
-const supabase = useSupabaseClient();
-
-const books = ref([])
-
+const supabase = useSupabaseClient()
+const keyword = ref("")
+const totalBuku = ref(0);
+const books = ref([]);
 const getBuku = async () => {
-  const { data, error} = await supabase
-  .from('buku')
-  .select(`*, kategori_buku(*)`)
-  .ilike("judul", `%${keyword.value}%`);
-  if(data) books.value= data;
-
+  const { data, error} = await supabase.from('buku').select('* kategori(*)')
+  .ilike('judul',`%${keyword.value}%`)
+  if(data) books.value= data
+}
+const getTotalBuku = async () => {
+  const { count, error } = await supabase.from('buku').select("*, kategori(*)", { count: "exact", head: true });
+  if (error) throw error
+  if (count) totalBuku.value = count;
 };
-
 onMounted(() => {
   getBuku();
+  getTotalBuku();
 });
-
-const keyword = ref("");
 </script>
 
 <style scoped>
+.shadow-lg {
+  box-shadow: 6px 4px 0 #2e2e2eae !important;
+}
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 4px 4px 20px #2e2e2eae !important;
+}
 .card-body {
   width: 100%;
   height: 30em;
@@ -66,7 +73,7 @@ const keyword = ref("");
   object-position: 0 30;
 }
 .form-control {
-  background-color: #D9D9D9;
+  background-color: #ffffff;
 }
 .btn {
   background-color: #D9D9D9;
